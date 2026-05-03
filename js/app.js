@@ -31,6 +31,17 @@ const texts = {
     heart: '💖',
     heartAlt: '💝',
   },
+  fun: [
+    { text: 'ოპაა' },
+    { text: 'მოდი აბა' },
+    { text: 'ჰიჰიიი' },
+    { text: 'ლალალა' },
+    { text: 'აბა დამიჭირე' },
+    { text: 'პუსი ეს' },
+    { text: 'სუსტი ხარ' },
+    { text: '🤪' },
+    { text: 'მოზლოზინი' },
+  ],
   resultText: {
     won: 'სწრაფი თითები გქონია 😏🌹',
     lost: 'კიდე აცაცუნე თითები',
@@ -81,6 +92,7 @@ let gameRunning = false;
 let timerId = null;
 let spawnId = null;
 let activeHeart = null;
+let activeTooltip = null;
 
 function updateStats() {
   setText(scoreEl, score);
@@ -92,10 +104,19 @@ function clearHeart() {
     activeHeart.remove();
     activeHeart = null;
   }
+  if (activeTooltip) {
+    activeTooltip.remove();
+    activeTooltip = null;
+  }
 }
 
 function randomBetween(min, max) {
   return Math.random() * (max - min) + min;
+}
+
+function getRandomFunText() {
+  const index = Math.floor(Math.random() * texts.fun.length);
+  return texts.fun[index].text;
 }
 
 function spawnHeart() {
@@ -114,6 +135,10 @@ function spawnHeart() {
   heart.style.top = top + 'px';
   // Show heart in UI immediately after positioning
   gameArea.appendChild(heart);
+
+  // Create and show tooltip using helper
+  activeTooltip = createTooltip(left, top);
+
   heart.addEventListener('click', (e) => {
     if (!gameRunning) return;
     clearHeart();
@@ -129,6 +154,37 @@ function spawnHeart() {
     spawnHeart();
   });
   activeHeart = heart;
+}
+
+function createTooltip(left, top) {
+  // Create tooltip element
+  const tooltip = document.createElement('div');
+  tooltip.className = 'heart-tooltip';
+  tooltip.textContent = getRandomFunText();
+  // Append to measure size
+  gameArea.appendChild(tooltip);
+  const tooltipWidth = tooltip.offsetWidth;
+  const tooltipHeight = tooltip.offsetHeight;
+  const areaWidth = gameArea.clientWidth;
+  const areaHeight = gameArea.clientHeight;
+  let tooltipLeft = left + 20;
+  let tooltipTop = top - 10;
+  // Adjust to stay within game area bounds
+  if (tooltipLeft + tooltipWidth > areaWidth) {
+    tooltipLeft = areaWidth - tooltipWidth - 8;
+  }
+  if (tooltipLeft < 8) {
+    tooltipLeft = 8;
+  }
+  if (tooltipTop < 8) {
+    tooltipTop = top + 58 + 8;
+  }
+  if (tooltipTop + tooltipHeight > areaHeight) {
+    tooltipTop = areaHeight - tooltipHeight - 8;
+  }
+  tooltip.style.left = tooltipLeft + 'px';
+  tooltip.style.top = tooltipTop + 'px';
+  return tooltip;
 }
 
 function createFloatingScore(x, y, text) {

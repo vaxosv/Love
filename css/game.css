@@ -214,3 +214,18 @@ button {
     opacity: 0;
   }
 }
+
+/* Tooltip styling */
+.heart-tooltip {
+  position: absolute;
+  background: var(--card);
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: var(--shadow);
+  transform: translate(-50%, -100%);
+}

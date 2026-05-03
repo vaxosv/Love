@@ -1,0 +1,144 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Love Click Game</title><link rel="stylesheet" href="css/game.css"/><script defer="defer" src="./js/app.js"></script></head><body><div class="app"><div class="card"><div class="topbar"><div class="stat"><span class="label">Score</span> <span class="value" id="score">0</span></div><div class="stat"><span class="label">Time</span> <span class="value" id="time">20</span></div><div class="stat"><span class="label">Goal</span> <span class="value" id="goal">15</span></div></div><h1>Catch My Heart</h1><p>Tap the hearts before time ends. Reach the goal and unlock a sweet surprise.</p><div class="game-area" id="gameArea" aria-label="Game area"></div><div class="controls"><button class="primary" id="startBtn">Start Game</button> <button class="secondary" id="resetBtn">Reset</button></div><div class="message" id="message">როცა მზად იქნები დაიწყე ჩემ გულის დაჭერა</div><div class="hint">Tip: works on phone and desktop.</div></div><div class="overlay" id="overlay"><div class="win-box"><div class="big" id="resultEmoji">💘</div><h2 id="resultTitle">You did it!</h2><p id="resultText">You unlocked my secret message.</p><div class="controls" style="margin-top: 16px"><button class="primary" id="playAgainBtn">Play Again</button></div></div></div></div><script>const scoreEl = document.getElementById('score');
+      const timeEl = document.getElementById('time');
+      const goalEl = document.getElementById('goal');
+      const gameArea = document.getElementById('gameArea');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const messageEl = document.getElementById('message');
+      const overlay = document.getElementById('overlay');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultText = document.getElementById('resultText');
+      const resultEmoji = document.getElementById('resultEmoji');
+      const playAgainBtn = document.getElementById('playAgainBtn');
+      const goal = 15;
+      const duration = 20;
+      goalEl.textContent = goal;
+      let score = 0;
+      let timeLeft = duration;
+      let gameRunning = false;
+      let timerId = null;
+      let spawnId = null;
+      let activeHeart = null;
+      function updateStats() {
+        scoreEl.textContent = score;
+        timeEl.textContent = timeLeft;
+      }
+      function clearHeart() {
+        if (activeHeart) {
+          activeHeart.remove();
+          activeHeart = null;
+        }
+      }
+      function randomBetween(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+      function spawnHeart() {
+        clearHeart();
+        if (!gameRunning) return;
+        const heart = document.createElement('button');
+        heart.className = 'heart';
+        heart.type = 'button';
+        heart.setAttribute('aria-label', 'Heart to click');
+        heart.textContent = Math.random() > 0.18 ? '💖' : '💝';
+        const areaRect = gameArea.getBoundingClientRect();
+        const size = 58;
+        const left = randomBetween(8, Math.max(9, areaRect.width - size - 8));
+        const top = randomBetween(8, Math.max(9, areaRect.height - size - 8));
+        heart.style.left = left + 'px';
+        heart.style.top = top + 'px';
+        heart.addEventListener('click', (e) => {
+          if (!gameRunning) return;
+          score += 1;
+          updateStats();
+          messageEl.textContent = score < goal ? 'Nice! Keep going 💗' : 'Goal reached!';
+          createFloatingScore(e.clientX, e.clientY, '+1');
+          createSparkles(left + 28, top + 28);
+          if (score >= goal) {
+            endGame(true);
+            return;
+          }
+          spawnHeart();
+        });
+        gameArea.appendChild(heart);
+        activeHeart = heart;
+      }
+      function createFloatingScore(x, y, text) {
+        const node = document.createElement('div');
+        node.className = 'floating';
+        node.textContent = text;
+        node.style.left = x - 10 + 'px';
+        node.style.top = y - 12 + 'px';
+        document.body.appendChild(node);
+        setTimeout(() => node.remove(), 700);
+      }
+      function createSparkles(x, y) {
+        for (let i = 0; i < 6; i++) {
+          const s = document.createElement('div');
+          s.className = 'sparkle';
+          s.style.left = x + 'px';
+          s.style.top = y + 'px';
+          s.style.setProperty('--x', randomBetween(-40, 40) + 'px');
+          s.style.setProperty('--y', randomBetween(-40, 18) + 'px');
+          gameArea.appendChild(s);
+          setTimeout(() => s.remove(), 600);
+        }
+      }
+      function tick() {
+        timeLeft -= 1;
+        updateStats();
+        if (timeLeft <= 0) {
+          endGame(score >= goal);
+        }
+      }
+      function startGame() {
+        score = 0;
+        timeLeft = duration;
+        gameRunning = true;
+        overlay.classList.remove('show');
+        updateStats();
+        messageEl.textContent = 'Go! Tap every heart you see 💕';
+        clearInterval(timerId);
+        clearInterval(spawnId);
+        clearHeart();
+        spawnHeart();
+        timerId = setInterval(tick, 1000);
+        spawnId = setInterval(() => {
+          if (gameRunning) spawnHeart();
+        }, 900);
+      }
+      function endGame(won) {
+        gameRunning = false;
+        clearInterval(timerId);
+        clearInterval(spawnId);
+        clearHeart();
+        if (won) {
+          resultEmoji.textContent = '💌';
+          resultTitle.textContent = 'You won my heart!';
+          resultText.textContent =
+            'Secret message: You make every day sweeter. Date reward unlocked 🌹';
+          messageEl.textContent = 'Mission complete 💖';
+        } else {
+          resultEmoji.textContent = '🥹';
+          resultTitle.textContent = 'Almost there!';
+          resultText.textContent =
+            'You caught ' + score + ' hearts. Try once more and unlock the surprise.';
+          messageEl.textContent = 'So close — one more round 💞';
+        }
+        overlay.classList.add('show');
+      }
+      function resetGame() {
+        gameRunning = false;
+        clearInterval(timerId);
+        clearInterval(spawnId);
+        clearHeart();
+        score = 0;
+        timeLeft = duration;
+        updateStats();
+        overlay.classList.remove('show');
+        messageEl.textContent = 'როცა მზად იქნები დაიწყე ჩემ გულის დაჭერა';
+        Array.from(document.querySelectorAll('.sparkle, .floating')).forEach((el) => el.remove());
+      }
+      startBtn.addEventListener('click', startGame);
+      resetBtn.addEventListener('click', resetGame);
+      playAgainBtn.addEventListener('click', startGame);
+      updateStats();</script></body></html>

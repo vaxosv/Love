@@ -17,7 +17,27 @@ const texts = {
   messages: {
     initial: 'როცა მზად იქნები შებერე',
     go: 'მიდი! დააჭირე ყველა გულს რასაც ხედავ 💕',
-    nice: 'კაია გააგრძელე 👹',
+    nice: [
+      { text: 'მიდიი' },
+      { text: 'მიაწექი' },
+      { text: 'მაგარი ხარ' },
+      { text: 'აბა შენ იცი' },
+      { text: 'არ გაჩერდე' },
+      { text: 'ბოლომდე მიდი' },
+      { text: 'შენ შეძლებ' },
+      { text: 'ძლიერად' },
+      { text: 'წინ წადი' },
+      { text: 'არ დანებდე' },
+      { text: 'კიდევ ერთხელ' },
+      { text: 'გწამს შენ' },
+      { text: 'სუპერ ხარ' },
+      { text: 'შენ ხარ ბოსი' },
+      { text: 'გააგრძელე' },
+      { text: 'შეუჩერებლად' },
+      { text: 'მთლად მაგარი' },
+      { text: 'შენ გეკუთვნის' },
+      { text: 'გაახურე' },
+    ],
     goalReached: 'ოპააა!',
     missionComplete: 'მისია შესრულებულია 💖✨✨✨',
     soClose: 'ცოტაც არ დანებდე !! 💞',
@@ -121,6 +141,11 @@ function getRandomFunText() {
   return texts.fun[index].text;
 }
 
+function getRandomMotivationText() {
+  const index = Math.floor(Math.random() * texts.messages.nice.length);
+  return texts.messages.nice[index].text;
+}
+
 function spawnHeart() {
   clearHeart();
   if (!gameRunning) return;
@@ -146,7 +171,7 @@ function spawnHeart() {
     clearHeart();
     score += 1;
     updateStats();
-    setText(messageEl, score < goal ? texts.messages.nice : texts.messages.goalReached);
+    setText(messageEl, score < goal ? getRandomMotivationText() : texts.messages.goalReached);
     createFloatingScore(e.clientX, e.clientY, '+1');
     createSparkles(left + 28, top + 28);
     if (score >= goal) {
@@ -225,6 +250,7 @@ function startGame() {
   timeLeft = duration;
   gameRunning = true;
   overlay.classList.remove('show');
+  startBtn.style.display = 'none';
   updateStats();
   setText(messageEl, texts.messages.go);
   clearInterval(timerId);
@@ -265,6 +291,7 @@ function resetGame() {
   timeLeft = duration;
   updateStats();
   overlay.classList.remove('show');
+  startBtn.style.display = '';
   setText(messageEl, texts.messages.initial);
   Array.from(document.querySelectorAll('.sparkle, .floating')).forEach((el) => el.remove());
 }
